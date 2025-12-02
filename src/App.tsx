@@ -290,14 +290,14 @@ function Row({
           onClick={onToggle}
           disabled={isSystem}
           className={`
-            relative w-9 h-5 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-[#1C1C1E]
-            ${enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-[#3A3A3C]'}
-            ${isSystem ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
+            relative w-11 h-6 rounded-full transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#1C1C1E]
+            ${enabled ? 'bg-[#34C759]' : 'bg-[#E9E9EA] dark:bg-[#39393D]'}
+            ${isSystem ? 'cursor-not-allowed opacity-60' : 'cursor-pointer active:scale-95'}
           `}
         >
           <span className={`
-            absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ease-in-out
-            ${enabled ? 'translate-x-4' : 'translate-x-0'}
+            absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
+            ${enabled ? 'translate-x-5' : 'translate-x-0'}
           `} />
         </button>
       </div>
