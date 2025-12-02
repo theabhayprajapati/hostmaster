@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "HostMaster - The Native /etc/hosts Manager",
     description: "Stop editing text files with sudo. Use HostMaster for a secure, native experience.",
     images: ["/dark-mode-app.png"],
-    creator: "@theabhayprajapati",
+    creator: "@maadhusudhan",
   },
   robots: {
     index: true,

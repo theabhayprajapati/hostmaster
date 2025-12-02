@@ -213,7 +213,7 @@ export default function LandingPage() {
           </div>
           <div className="flex gap-6 text-sm font-medium">
             <a href="#" className="text-gray-400 hover:text-white">Privacy</a>
-            <a href="#" className="text-gray-400 hover:text-white">Twitter</a>
+            <a href="https://x.com/maadhusudhan" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">Twitter</a>
             <a href="https://github.com/theabhayprajapati/hostmaster" className="text-gray-400 hover:text-white">GitHub</a>
           </div>
         </div>
