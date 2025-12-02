@@ -49,6 +49,15 @@
 
 Get the latest version for your operating system from the **[Releases Page](https://github.com/theabhayprajapati/hostmaster/releases)**.
 
+### macOS
+1. Download the `.dmg` file from the [Releases](https://github.com/theabhayprajapati/hostmaster/releases) page.
+2. Open the `.dmg` and drag the app to your Applications folder.
+3. **Important:** If you see a message saying the app is "damaged" or "cannot be opened", run this command in your terminal:
+   ```bash
+   xattr -cr /Applications/HostMaster.app
+   ```
+   *(This is required because the app is not yet notarized by Apple)*
+
 | Platform | Format |
 | :--- | :--- |
 | **macOS** | `.dmg` (Universal) |
