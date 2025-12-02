@@ -1,59 +1,79 @@
-# HostMaster
+<div align="center">
+  <img src="public/app_icon.png" alt="HostMaster Logo" width="120" height="120" />
 
-**HostMaster** is a modern, cross-platform `/etc/hosts` file manager built with [Tauri](https://tauri.app/), [React](https://react.dev/), and [Rust](https://www.rust-lang.org/). It provides a beautiful, native-feeling interface to easily manage your system's host entries.
+  # HostMaster
 
-![HostMaster Dark Mode](./public/dark-mode-app.png)
+  **The modern, native `/etc/hosts` manager for macOS, Linux, and Windows.**
 
-## ✨ Features
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Tauri](https://img.shields.io/badge/Tauri-v2-blue)](https://v2.tauri.app/)
+  [![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange)](https://www.rust-lang.org/)
+  [![React](https://img.shields.io/badge/Frontend-React-61DAFB)](https://react.dev/)
 
-*   **Native Aesthetic:** Designed with a premium Apple-like "Liquid" design system.
-*   **Theming:** Full support for **Light**, **Dark**, and **System** themes.
-    *   Includes a "True Black" OLED-friendly dark mode.
-    *   Native window title bar integration that syncs with the theme.
-*   **Easy Management:**
-    *   **Toggle:** Instantly enable/disable host entries with smooth switches.
-    *   **Edit:** Inline editing for IP addresses and domains.
-    *   **Search:** Real-time filtering to find entries quickly.
-*   **Secure:**
-    *   Reads `/etc/hosts` safely.
-    *   Only requests Administrator/Sudo privileges when you explicitly click **Apply**.
-    *   Uses native OS prompts for authentication (`osascript` on macOS, `pkexec` on Linux).
+  <p align="center">
+    <a href="#-download">Download</a> •
+    <a href="#-features">Features</a> •
+    <a href="#-getting-started">Getting Started</a>
+  </p>
+</div>
 
-## 📥 Download
+---
 
-You can download the latest version of HostMaster from the [Releases](https://github.com/yourusername/hostmaster/releases) page.
-
-*   **macOS:** Download the `.dmg` file.
-*   **Linux:** Download the `.deb` or `.AppImage` file.
-
-*Note: If you are building from source, see the [Getting Started](#-getting-started) section below.*
+**HostMaster** reimagines how you manage your system's host entries. Built with **Tauri v2**, it combines the performance and security of **Rust** with a beautiful, Apple-native **React** interface.
 
 ## 📸 Screenshots
 
-| Light Mode | Dark Mode |
-|:---:|:---:|
-| ![Light Mode](./public/light-mode-app.png) | ![Dark Mode](./public/dark-mode-app.png) |
+<div align="center">
+  <img src="public/light-mode-app.png" alt="Light Mode" width="45%" />
+  &nbsp;
+  <img src="public/dark-mode-app.png" alt="Dark Mode" width="45%" />
+</div>
+
+## ✨ Features
+
+*   **🎨 Modern "Liquid" Design:** A premium, native-feeling UI with smooth animations, blur effects, and Apple-standard aesthetics.
+*   **🌗 Adaptive Theming:**
+    *   **True Black Dark Mode:** Optimized for OLED displays.
+    *   **System Sync:** Automatically adapts to your OS theme preference.
+    *   **Native Window:** The title bar and window controls blend perfectly with the app content.
+*   **⚡️ Fast & Efficient:**
+    *   **Instant Toggles:** Enable or disable host entries with a single click.
+    *   **Inline Editing:** Edit IP addresses and domains directly in the list.
+    *   **Smart Search:** Filter through hundreds of entries instantly.
+*   **🔒 Secure by Design:**
+    *   **Read-Only by Default:** Reads your hosts file safely on startup.
+    *   **Privileged Saves:** Only requests Administrator/Sudo permissions (`osascript` on macOS, `pkexec` on Linux) when you explicitly save changes.
+    *   **Atomic Writes:** Writes to a temporary file first to prevent corruption.
+
+## 📥 Download
+
+Get the latest version for your operating system from the **[Releases Page](https://github.com/theabhayprajapati/hostmaster/releases)**.
+
+| Platform | Format |
+| :--- | :--- |
+| **macOS** | `.dmg` (Universal) |
+| **Linux** | `.deb`, `.AppImage` |
+| **Windows** | `.exe` |
 
 ## 🛠️ Tech Stack
 
 *   **Core:** [Tauri v2](https://v2.tauri.app/) (Rust + Webview)
-*   **Frontend:** React, TypeScript, Vite
-*   **Styling:** Tailwind CSS v3
-*   **Icons:** Lucide React
+*   **Frontend:** React 19, TypeScript, Vite
+*   **Styling:** Tailwind CSS v3, Lucide Icons
+*   **State Management:** React Hooks
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure you have the following installed:
-*   [Node.js](https://nodejs.org/) (v18 or later)
+*   [Node.js](https://nodejs.org/) (v18+)
 *   [Rust](https://www.rust-lang.org/tools/install) (latest stable)
 
 ### Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/hostmaster.git
+    git clone https://github.com/theabhayprajapati/hostmaster.git
     cd hostmaster
     ```
 
@@ -66,23 +86,15 @@ Ensure you have the following installed:
     ```bash
     npm run tauri dev
     ```
-    This will launch the application window.
 
 ### Building for Production
 
-To create a standalone application bundle/installer for your OS:
+To create a standalone installer for your OS:
 
 ```bash
 npm run tauri build
 ```
-
-The output will be located in `src-tauri/target/release/bundle`.
-
-## 🔒 Permissions
-
-HostMaster requires permission to write to your system's hosts file (`/etc/hosts` on Unix-like systems).
-*   **Read:** The app reads the file on startup.
-*   **Write:** When you click "Apply", the app invokes a Rust backend command that securely prompts for your system password to save changes.
+The output will be in `src-tauri/target/release/bundle`.
 
 ## 📄 License
 
