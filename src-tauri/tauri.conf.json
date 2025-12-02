@@ -12,9 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "hostmaster",
+        "title": "HostMaster",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "transparent": true,
+        "decorations": true
       }
     ],
     "security": {

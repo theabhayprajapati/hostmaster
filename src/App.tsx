@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Check, ShieldAlert, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Search, Check, ShieldAlert, Trash2, Sun, Moon, Monitor } from 'lucide-react';
 import { invoke } from "@tauri-apps/api/core";
+import { setTheme as setTauriTheme } from '@tauri-apps/api/app';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 // --- Types ---
 interface HostEntry {
@@ -11,17 +13,76 @@ interface HostEntry {
   isSystem: boolean;
 }
 
+type AppTheme = 'light' | 'dark' | 'system';
+
 export default function App() {
   const [hosts, setHosts] = useState<HostEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<AppTheme>('system');
 
   useEffect(() => {
     // Load actual file on startup
     invoke<HostEntry[]>('read_hosts_file')
       .then(setHosts)
       .catch(console.error);
+  }, []);
+
+  // Theme Effect
+  useEffect(() => {
+    // 1. Tell Tauri to update the window theme
+    const updateTauriTheme = async () => {
+      try {
+        if (theme === 'system') {
+          await setTauriTheme(null);
+        } else {
+          await setTauriTheme(theme);
+        }
+      } catch (e) {
+        console.error("Failed to set theme:", e);
+      }
+    };
+    updateTauriTheme();
+  }, [theme]);
+
+  useEffect(() => {
+    // 2. Listen for theme changes to update the DOM
+    let unlisten: Promise<() => void>;
+
+    const updateDomTheme = (themeStr: string | null) => {
+      const root = window.document.documentElement;
+      if (themeStr === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    };
+
+    const setupListener = async () => {
+      const win = getCurrentWindow();
+
+      // Get initial theme
+      try {
+        const currentTheme = await win.theme();
+        updateDomTheme(currentTheme);
+      } catch (e) {
+        console.error("Failed to get initial theme:", e);
+      }
+
+      // Listen for changes
+      unlisten = win.onThemeChanged(({ payload: newTheme }: { payload: 'light' | 'dark' }) => {
+        updateDomTheme(newTheme);
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      if (unlisten) {
+        unlisten.then(f => f());
+      }
+    };
   }, []);
 
   // Filter logic
@@ -77,57 +138,55 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#F5F5F7] text-gray-900 font-sans selection:bg-blue-200">
+    <div className="flex flex-col h-screen bg-[#F5F5F7] dark:bg-[#000000] text-gray-900 dark:text-gray-100 font-sans selection:bg-blue-200 dark:selection:bg-blue-800 transition-colors duration-200">
 
-      {/* --- Title Bar Area (Simulated) --- */}
-      <header className="flex items-center justify-between px-4 py-3 bg-white/50 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 transition-all">
+      {/* --- Title Bar Area --- */}
+      <header
+        data-tauri-drag-region
+        className="h-[52px] flex items-center justify-between px-4 bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl border-b border-gray-200 dark:border-[#38383A] sticky top-0 z-50 transition-all select-none"
+      >
         {/* Left: Window Controls spacer + Search */}
-        <div className="flex items-center gap-4 w-1/3">
-          <div className="flex gap-2 mr-4 opacity-50 hover:opacity-100 transition-opacity">
-            <div className="w-3 h-3 rounded-full bg-red-400"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-            <div className="w-3 h-3 rounded-full bg-green-400"></div>
-          </div>
+        <div className="flex items-center gap-4 w-1/3 pl-24" data-tauri-drag-region>
 
           <div className="relative group w-full max-w-[200px]">
-            <Search className="w-4 h-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
+            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
             <input
               type="text"
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-100/50 hover:bg-gray-100 focus:bg-white border border-transparent focus:border-blue-400/50 rounded-md py-1 pl-8 pr-2 text-sm outline-none transition-all"
+              className="w-full bg-gray-100 dark:bg-[#2C2C2E] hover:bg-gray-200 dark:hover:bg-[#3A3A3C] focus:bg-white dark:focus:bg-[#1C1C1E] border border-transparent focus:border-blue-500/30 rounded-md py-1 pl-8 pr-2 text-xs outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-500 shadow-sm"
             />
           </div>
         </div>
 
         {/* Center: Title */}
-        <div className="text-sm font-semibold tracking-wide text-gray-700 select-none">
-          Hosts Editor
+        <div className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase" data-tauri-drag-region>
+          HostMaster
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-2 w-1/3">
+        <div className="flex items-center justify-end gap-3 w-1/3">
           <button
             onClick={addNewEntry}
-            className="p-1.5 rounded-md hover:bg-gray-200 text-gray-600 transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-[#3A3A3C] text-gray-500 dark:text-gray-400 transition-colors"
             title="Add New Entry (Cmd+N)"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
           </button>
 
           <button
             onClick={handleSave}
             disabled={!hasChanges}
             className={`
-              px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5
+              px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5 border
               ${hasChanges
-                ? 'bg-blue-500 text-white shadow-sm hover:bg-blue-600 active:scale-95'
-                : 'bg-gray-200 text-gray-400 cursor-default'}
+                ? 'bg-blue-600 border-blue-500 text-white shadow-sm hover:bg-blue-500'
+                : 'bg-gray-100 dark:bg-[#2C2C2E] border-gray-200 dark:border-[#38383A] text-gray-400 dark:text-gray-500 cursor-default'}
             `}
           >
             {hasChanges ? <ShieldAlert className="w-3 h-3" /> : <Check className="w-3 h-3" />}
-            {hasChanges ? 'Apply Changes' : 'Synced'}
+            {hasChanges ? 'Apply' : 'Synced'}
           </button>
         </div>
       </header>
@@ -137,7 +196,7 @@ export default function App() {
         <div className="max-w-4xl mx-auto">
 
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wider select-none">
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider select-none">
             <div className="col-span-1 text-center">Active</div>
             <div className="col-span-3">IP Address</div>
             <div className="col-span-7">Hostname / Domains</div>
@@ -145,9 +204,9 @@ export default function App() {
           </div>
 
           {/* List */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-[#1C1C1E] rounded-xl shadow-sm border border-gray-200 dark:border-[#38383A] overflow-hidden transition-colors duration-200">
             {filteredHosts.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
+              <div className="p-8 text-center text-gray-400 dark:text-gray-500">
                 No entries found.
               </div>
             ) : (
@@ -164,8 +223,37 @@ export default function App() {
             )}
           </div>
 
-          <div className="mt-4 text-center text-xs text-gray-400">
-            Editing /etc/hosts requires administrator privileges on save.
+          {/* Footer / Status Bar */}
+          <div className="mt-6 flex flex-col items-center gap-4">
+
+            {/* Theme Switcher */}
+            <div className="flex items-center gap-1 p-1 bg-gray-200 dark:bg-[#1C1C1E] rounded-full border border-gray-300 dark:border-[#38383A]">
+              <button
+                onClick={() => setTheme('light')}
+                className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-white dark:bg-[#3A3A3C] shadow-sm text-yellow-500' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                title="Light Mode"
+              >
+                <Sun className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setTheme('system')}
+                className={`p-1.5 rounded-full transition-all ${theme === 'system' ? 'bg-white dark:bg-[#3A3A3C] shadow-sm text-blue-500' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                title="System Theme"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={`p-1.5 rounded-full transition-all ${theme === 'dark' ? 'bg-white dark:bg-[#3A3A3C] shadow-sm text-purple-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                title="Dark Mode"
+              >
+                <Moon className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="text-[10px] text-gray-400 dark:text-gray-600">
+              Editing /etc/hosts requires administrator privileges on save.
+            </div>
           </div>
 
         </div>
@@ -192,7 +280,7 @@ function Row({
 
   return (
     <div className={`
-      group grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors
+      group grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-gray-100 dark:border-[#38383A] last:border-0 hover:bg-gray-50 dark:hover:bg-[#2C2C2E] transition-colors
       ${!enabled ? 'opacity-50 grayscale' : ''}
     `}>
 
@@ -202,8 +290,8 @@ function Row({
           onClick={onToggle}
           disabled={isSystem}
           className={`
-            relative w-9 h-5 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-            ${enabled ? 'bg-green-500' : 'bg-gray-300'}
+            relative w-9 h-5 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-[#1C1C1E]
+            ${enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-[#3A3A3C]'}
             ${isSystem ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
           `}
         >
@@ -222,9 +310,9 @@ function Row({
           readOnly={isSystem}
           onChange={(e) => onChange(id, 'ip', e.target.value)}
           className={`
-            w-full bg-transparent font-mono text-sm text-gray-800 outline-none rounded px-1.5 py-0.5
-            ${!isSystem && 'hover:bg-gray-200/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all'}
-            ${isSystem && 'text-gray-500 cursor-default'}
+            w-full bg-transparent font-mono text-sm text-gray-800 dark:text-gray-200 outline-none rounded px-1.5 py-0.5
+            ${!isSystem && 'hover:bg-gray-200/50 dark:hover:bg-[#3A3A3C] focus:bg-white dark:focus:bg-[#1C1C1E] focus:ring-2 focus:ring-blue-500/20 transition-all'}
+            ${isSystem && 'text-gray-500 dark:text-gray-500 cursor-default'}
           `}
           spellCheck={false}
         />
@@ -239,9 +327,9 @@ function Row({
           autoFocus={isFocused}
           onChange={(e) => onChange(id, 'domain', e.target.value)}
           className={`
-            w-full bg-transparent text-sm font-medium outline-none rounded px-1.5 py-0.5
-            ${!isSystem && 'hover:bg-gray-200/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all'}
-            ${isSystem && 'text-gray-500 cursor-default'}
+            w-full bg-transparent text-sm font-medium text-gray-900 dark:text-gray-100 outline-none rounded px-1.5 py-0.5
+            ${!isSystem && 'hover:bg-gray-200/50 dark:hover:bg-[#3A3A3C] focus:bg-white dark:focus:bg-[#1C1C1E] focus:ring-2 focus:ring-blue-500/20 transition-all'}
+            ${isSystem && 'text-gray-500 dark:text-gray-500 cursor-default'}
           `}
           spellCheck={false}
         />
@@ -252,13 +340,13 @@ function Row({
         {!isSystem && (
           <button
             onClick={onDelete}
-            className="text-gray-300 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+            className="text-gray-300 dark:text-[#3A3A3C] hover:text-red-500 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         )}
         {isSystem && (
-          <span className="text-xs text-gray-300 select-none">System</span>
+          <span className="text-xs text-gray-300 dark:text-[#3A3A3C] select-none">System</span>
         )}
       </div>
     </div>
